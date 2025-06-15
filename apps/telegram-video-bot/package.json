@@ -1,0 +1,73 @@
+{
+  "name": "@telegram-video-bot/telegram-video-bot",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "defaultConfiguration": "production",
+        "options": {
+          "platform": "node",
+          "outputPath": "apps/telegram-video-bot/dist",
+          "format": [
+            "cjs"
+          ],
+          "bundle": false,
+          "main": "apps/telegram-video-bot/src/main.ts",
+          "tsConfig": "apps/telegram-video-bot/tsconfig.app.json",
+          "assets": [
+            "apps/telegram-video-bot/src/assets"
+          ],
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
+        "configurations": {
+          "development": {},
+          "production": {
+            "generateLockfile": true,
+            "esbuildOptions": {
+              "sourcemap": false,
+              "outExtension": {
+                ".js": ".js"
+              }
+            }
+          }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@telegram-video-bot/telegram-video-bot:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@telegram-video-bot/telegram-video-bot:build:development"
+          },
+          "production": {
+            "buildTarget": "@telegram-video-bot/telegram-video-bot:build:production"
+          }
+        }
+      },
+      "docker-build": {
+        "dependsOn": [
+          "build"
+        ],
+        "command": "docker build -f apps/telegram-video-bot/Dockerfile . -t telegram-video-bot-telegram-video-bot"
+      }
+    }
+  }
+}
