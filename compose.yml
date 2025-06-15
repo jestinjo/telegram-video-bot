@@ -8,10 +8,16 @@ services:
       TELEGRAM_API_HASH: "de0c8975fd6ac8029413fc3c7cb5dbfa"
       TELEGRAM_LOCAL: True
     volumes:
-      - telegram-bot-api-data:/var/lib/telegram-bot-api
-      - /mnt/c/data:/media
+      - /mnt/c/data:/var/lib/telegram-bot-api
     ports:
       - "8081:8081"
-
-volumes:
-  telegram-bot-api-data:
+  
+  telegram-bot:
+    image: telegram-video-bot:latest
+    environment:
+      BOT_TOKEN: ""
+      BOT_API: "http://telegram-bot-api:8081"
+      ACCESS_IDS: ""
+    volumes:
+      - /mnt/c/data:/var/lib/telegram-bot-api
+      - /mnt/c/media:/data
