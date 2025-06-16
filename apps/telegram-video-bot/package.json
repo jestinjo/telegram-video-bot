@@ -70,13 +70,7 @@
         "dependsOn": [
           "build"
         ],
-        "command": "docker build -f apps/telegram-video-bot/Dockerfile . -t ghcr.io/jestinjo/telegram-video-bot:latest"
-      },
-      "docker-push": {
-        "dependsOn": [
-          "docker-build"
-        ],
-        "command": "docker push ghcr.io/jestinjo/telegram-video-bot:latest"
+        "command": "docker build -f apps/telegram-video-bot/Dockerfile . -t telegram-video-bot:latest"
       }
     }
   }

@@ -4,9 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/telegram-video-bot-e2e"
-    },
-    {
       "path": "./apps/telegram-video-bot"
     }
   ]
