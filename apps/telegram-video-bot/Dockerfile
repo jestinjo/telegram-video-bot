@@ -11,13 +11,13 @@ ENV PORT=3000
 
 WORKDIR /app
 
-RUN apk add --no-cache shadow && \
-  groupadd -r telegram-video-bot && \
-  useradd -r -g telegram-video-bot telegram-video-bot
+RUN addgroup -S telegram-video-bot && \
+  adduser -S -G telegram-video-bot telegram-video-bot
 
-COPY apps/telegram-video-bot/package.json /app/telegram-video-bot/
+COPY package.json /app/telegram-video-bot/
+COPY package-lock.json /app/telegram-video-bot/
 WORKDIR /app/telegram-video-bot
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 COPY apps/telegram-video-bot/dist .
 RUN chown -R telegram-video-bot:telegram-video-bot /app/telegram-video-bot
