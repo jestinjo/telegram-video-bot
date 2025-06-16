@@ -53,19 +53,20 @@ jobs:
           echo "Building Docker image with tags: ${{ steps.meta.outputs.tags }}"
           echo "Labels: ${{ steps.meta.outputs.labels }}"
 
-      # - run: npm ci
-      # - uses: nrwl/nx-set-shas@v4
+      - run: npm ci
+      - uses: nrwl/nx-set-shas@v4
 
-      # - run: npx nx affected -t build
+      - run: npx nx affected -t build
 
-      # - name: Build and push Docker image
-      #   id: push
-      #   uses: docker/build-push-action@v6.18.0
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: .
+          file: apps/telegram-video-bot/Dockerfile
+          # push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       # - name: Generate artifact attestation
       #   uses: actions/attest-build-provenance@v2
