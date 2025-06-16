@@ -158,7 +158,8 @@ validateFolders(FOLDERS);
 // Use
 bot.use(conversations());
 bot.use(createConversation(startDocumentDownload, {
-  parallel: true
+  parallel: true,
+  maxMillisecondsToWait: 1000 * 60 * 30
 }));
 
 // Commands
