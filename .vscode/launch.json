@@ -14,9 +14,10 @@
             "type": "node",
             "preLaunchTask": "nx: nx run @telegram-video-bot/telegram-video-bot:build",
             "env": {
-                "BOT_TOKEN": ""
+                "BOT_TOKEN": "BOT_TOKEN",
+                "BOT_API": "http://host.docker.internal:8081",
+                "ACCESS_IDS": "ACCESS_IDS"
             }
         }
-
     ]
 }

@@ -62,16 +62,19 @@ async function startDocumentDownload(conversation: Conversation<MyContext, MyCon
                 if (!existsSync(folderPath)) {
                     mkdirSync(folderPath, { recursive: true });
                 }
-                
+
+                const message = await ctx.reply('Downloading...');
+                messageIds.push(message.message_id);
+
                 const file = await ctx.getFile();
 
-                console.log("Downloaded:", file.file_path); 
+                const adjustedFilePath = file.file_path!.replace("/var/lib/telegram-bot-api", "/data/telegram");
 
-                renameSync(file.file_path!, filePath);
-                
+                renameSync(adjustedFilePath, filePath);
+
                 await ctx.reply(`Downloaded: ${filename}`);
                 ctx.deleteMessages(messageIds)
-                
+
             } catch (error) {
                 console.error("Error downloading file:", error);
                 await ctx1.reply("An error occurred while downloading the file.");
@@ -135,7 +138,7 @@ const FOLDERS: FolderPath[] = [
     },
     {
         title: "TV Shows",
-        path: "/data/mdeia/tv"
+        path: "/data/media/tv"
     }
 ];
 

@@ -11,15 +11,15 @@ ENV PORT=3000
 
 WORKDIR /app
 
-RUN addgroup --system telegram-video-bot && \
-          adduser --system -G telegram-video-bot telegram-video-bot
+RUN apk add --no-cache shadow && \
+  groupadd -r telegram-video-bot && \
+  useradd -r -g telegram-video-bot telegram-video-bot
 
-COPY apps/telegram-video-bot/dist telegram-video-bot/
-COPY apps/telegram-video-bot/package.json telegram-video-bot/
-RUN chown -R telegram-video-bot:telegram-video-bot .
+COPY apps/telegram-video-bot/package.json /app/telegram-video-bot/
+WORKDIR /app/telegram-video-bot
+RUN npm install --omit=dev
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix telegram-video-bot --omit=dev -f install
+COPY apps/telegram-video-bot/dist .
+RUN chown -R telegram-video-bot:telegram-video-bot /app/telegram-video-bot
 
-CMD [ "node", "telegram-video-bot" ]
+CMD [ "node", "main.js" ]

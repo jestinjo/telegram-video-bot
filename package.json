@@ -6,9 +6,7 @@
   "private": true,
   "dependencies": {
     "@grammyjs/conversations": "^2.1.0",
-    "axios": "^1.6.0",
-    "grammy": "^1.36.3",
-    "https": "^1.0.0"
+    "grammy": "^1.36.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",

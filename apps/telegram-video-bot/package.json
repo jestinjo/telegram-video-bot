@@ -2,6 +2,10 @@
   "name": "@telegram-video-bot/telegram-video-bot",
   "version": "0.0.1",
   "private": true,
+  "dependencies": {
+    "@grammyjs/conversations": "^2.1.0",
+    "grammy": "^1.36.3"
+  },
   "nx": {
     "targets": {
       "build": {
@@ -16,7 +20,7 @@
           "format": [
             "cjs"
           ],
-          "bundle": false,
+          "bundle": true,
           "main": "apps/telegram-video-bot/src/main.ts",
           "tsConfig": "apps/telegram-video-bot/tsconfig.app.json",
           "assets": [
