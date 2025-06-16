@@ -43,6 +43,8 @@ jobs:
         uses: docker/metadata-action@v5.7.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - run: |
           echo "Building Docker image with tags: ${{ steps.meta.outputs.tags }}"
