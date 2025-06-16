@@ -45,6 +45,9 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+        env:
+          DOCKER_METADATA_SHORT_SHA_LENGTH: 12
 
       - run: |
           echo "Building Docker image with tags: ${{ steps.meta.outputs.tags }}"
