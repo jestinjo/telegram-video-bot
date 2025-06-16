@@ -139,7 +139,10 @@ function validateFolders(folders: FolderPath[]) {
 const ACCESS_IDS = (process.env.ACCESS_IDS || "").split(",")
 
 const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "", {
-    client: { apiRoot: process.env.BOT_API || "" }
+    client: {
+      apiRoot: process.env.BOT_API || "",
+      timeoutSeconds: 30 * 60
+     }
 });
 
 const FOLDERS: FolderPath[] = [
