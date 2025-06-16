@@ -9,6 +9,7 @@ import {
 } from "@grammyjs/conversations";
 import { join } from "path";
 import { renameSync } from "fs";
+import { InlineKeyboardButton } from "grammy/types";
 
 type MyContext = Context & ConversationFlavor<Context>;
 
@@ -40,56 +41,66 @@ function getFolderPath(rootFolder: FolderPath, fileName: string) {
 }
 
 async function startDocumentDownload(conversation: Conversation<MyContext, MyContext>, ctx: MyContext) {
-    if (!isValidUser(ctx)) {
-        return;
+  if (!isValidUser(ctx)) {
+    return;
+  }
+
+  const markUp = FOLDERS.map(x => {
+    return {
+      text: x.title,
+      callback_data: x.title
+    } as InlineKeyboardButton
+  })
+
+  const message = await ctx.reply("Select download location", {
+    reply_markup: { inline_keyboard: [markUp]},
+    reply_parameters: { message_id: ctx.message!.message_id },
+  });
+
+  const messageIds: number[] = [ctx.message!.message_id, message.message_id];
+
+  const callback = await conversation.waitForCallbackQuery(markUp.map(x => x.text))
+
+  console.log("User selected a folder or exited the conversation.");
+
+  await downloadFile(ctx, FOLDERS.find(folder => folder.title === callback.callbackQuery?.data)!, messageIds);
+
+  console.log("Download completed or timed out.");
+}
+
+async function downloadFile(ctx: Context, folder: FolderPath, messageIds: number[]) {
+  try {
+    if (!ctx.message || !ctx.message.document || !ctx.message.document.file_id) {
+      await ctx.reply("No document found.");
+      return;
     }
 
+    const filename = ctx.message!.document!.file_name || "";
+    const folderPath = getFolderPath(folder, filename);
+    const filePath = join(folderPath, filename);
 
-    const menu = conversation.menu();
+    if (!existsSync(folderPath)) {
+      mkdirSync(folderPath, { recursive: true });
+    }
 
-    FOLDERS.forEach(folder => {
-        menu.text(folder.title, async (ctx1) => {
-            try {
-                if (!ctx.message || !ctx.message.document || !ctx.message.document.file_id) {
-                    await ctx1.reply("No document found.");
-                    return;
-                }
+    const message = await ctx.reply('Downloading...');
+    messageIds.push(message.message_id);
 
-                const filename = ctx.message!.document!.file_name || "";
-                const folderPath = getFolderPath(folder, filename);
-                const filePath = join(folderPath, filename);
+    const file = await ctx.getFile();
 
-                if (!existsSync(folderPath)) {
-                    mkdirSync(folderPath, { recursive: true });
-                }
+    const adjustedFilePath = file.file_path!.replace("/var/lib/telegram-bot-api", "/data/telegram");
 
-                const message = await ctx.reply('Downloading...');
-                messageIds.push(message.message_id);
+    renameSync(adjustedFilePath, filePath);
 
-                const file = await ctx.getFile();
+    console.log(`File moved from ${adjustedFilePath} to ${filePath}`);
 
-                const adjustedFilePath = file.file_path!.replace("/var/lib/telegram-bot-api", "/data/telegram");
+    await ctx.reply(`Downloaded: ${filename}`);
+    ctx.deleteMessages(messageIds);
 
-                renameSync(adjustedFilePath, filePath);
-
-                await ctx.reply(`Downloaded: ${filename}`);
-                ctx.deleteMessages(messageIds)
-
-            } catch (error) {
-                console.error("Error downloading file:", error);
-                await ctx1.reply("An error occurred while downloading the file.");
-            }
-        });
-    });
-
-    const message = await ctx.reply("Select download location", {
-        reply_markup: menu,
-        reply_parameters: { message_id: ctx.message!.message_id },
-    });
-
-    const messageIds: number[] = [ctx.message!.message_id, message.message_id];
-
-    await conversation.wait();
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    await ctx.reply("An error occurred while downloading the file.");
+  }
 }
 
 async function onDocument(ctx: MyContext): Promise<void> {
@@ -146,7 +157,9 @@ validateFolders(FOLDERS);
 
 // Use
 bot.use(conversations());
-bot.use(createConversation(startDocumentDownload));
+bot.use(createConversation(startDocumentDownload, {
+  parallel: true
+}));
 
 // Commands
 bot.command("start", start);
