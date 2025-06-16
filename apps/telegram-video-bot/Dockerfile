@@ -3,7 +3,7 @@
 # Build the docker image with `npx nx docker-build @telegram-video-bot/telegram-video-bot`.
 # Tip: Modify "docker-build" options in project.json to change docker build args.
 #
-# Run the container with `docker run -p 3000:3000 -t telegram-video-bot-telegram-video-bot`.
+# Run the container with `docker run -p 3000:3000 -t telegram-video-bot`.
 FROM docker.io/node:lts-alpine
 
 ENV HOST=0.0.0.0
@@ -11,15 +11,15 @@ ENV PORT=3000
 
 WORKDIR /app
 
-RUN addgroup --system telegram-video-bot-telegram-video-bot && \
-          adduser --system -G telegram-video-bot-telegram-video-bot telegram-video-bot-telegram-video-bot
+RUN addgroup -S telegram-video-bot && \
+  adduser -S -G telegram-video-bot telegram-video-bot
 
-COPY apps/telegram-video-bot/dist telegram-video-bot-telegram-video-bot/
-COPY apps/telegram-video-bot/package.json telegram-video-bot-telegram-video-bot/
-RUN chown -R telegram-video-bot-telegram-video-bot:telegram-video-bot-telegram-video-bot .
+COPY package.json /app/telegram-video-bot/
+COPY package-lock.json /app/telegram-video-bot/
+WORKDIR /app/telegram-video-bot
+RUN npm ci --omit=dev
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix telegram-video-bot-telegram-video-bot --omit=dev -f install
+COPY apps/telegram-video-bot/dist .
+RUN chown -R telegram-video-bot:telegram-video-bot /app/telegram-video-bot
 
-CMD [ "node", "telegram-video-bot-telegram-video-bot" ]
+CMD [ "node", "main.js" ]
