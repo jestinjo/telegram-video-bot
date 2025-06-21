@@ -9,14 +9,8 @@ import {
 } from "@grammyjs/conversations";
 import { join } from "path";
 import { renameSync } from "fs";
-import { InlineKeyboardButton } from "grammy/types";
 
 type MyContext = Context & ConversationFlavor<Context>;
-
-interface FolderPath {
-    title: string;
-    path: string;
-}
 
 function start(ctx: Context) {
     if (!isValidUser(ctx)) {
@@ -35,40 +29,19 @@ function isValidUser(ctx: Context) {
     }
 }
 
-function getFolderPath(rootFolder: FolderPath, fileName: string) {
-    const fileNameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
-    return join(rootFolder.path, fileNameWithoutExtension);
-}
-
 async function startDocumentDownload(conversation: Conversation<MyContext, MyContext>, ctx: MyContext) {
   if (!isValidUser(ctx)) {
     return;
   }
 
-  const markUp = FOLDERS.map(x => {
-    return {
-      text: x.title,
-      callback_data: x.title
-    } as InlineKeyboardButton
-  })
+  const messageIds: number[] = [ctx.message!.message_id];
 
-  const message = await ctx.reply("Select download location", {
-    reply_markup: { inline_keyboard: [markUp]},
-    reply_parameters: { message_id: ctx.message!.message_id },
-  });
-
-  const messageIds: number[] = [ctx.message!.message_id, message.message_id];
-
-  const callback = await conversation.waitForCallbackQuery(markUp.map(x => x.text))
-
-  console.log("User selected a folder or exited the conversation.");
-
-  await downloadFile(ctx, FOLDERS.find(folder => folder.title === callback.callbackQuery?.data)!, messageIds);
+  await downloadFile(ctx, messageIds);
 
   console.log("Download completed or timed out.");
 }
 
-async function downloadFile(ctx: Context, folder: FolderPath, messageIds: number[]) {
+async function downloadFile(ctx: Context, messageIds: number[]) {
   try {
     if (!ctx.message || !ctx.message.document || !ctx.message.document.file_id) {
       await ctx.reply("No document found.");
@@ -76,12 +49,14 @@ async function downloadFile(ctx: Context, folder: FolderPath, messageIds: number
     }
 
     const filename = ctx.message!.document!.file_name || "";
-    const folderPath = getFolderPath(folder, filename);
+    const folderPath = "/data/telegram/complete";
     const filePath = join(folderPath, filename);
 
     if (!existsSync(folderPath)) {
       mkdirSync(folderPath, { recursive: true });
     }
+
+    console.log("Download started for:", ctx.message!.document!.file_name);
 
     const message = await ctx.reply('Downloading...');
     messageIds.push(message.message_id);
@@ -120,22 +95,6 @@ async function onDocument(ctx: MyContext): Promise<void> {
     }
 }
 
-function validateFolders(folders: FolderPath[]) {
-    if (!folders || folders.length === 0) {
-        throw new Error("No folders available for download.");
-    }
-
-    folders.forEach(folder => {
-        if (!folder.path || !folder.title) {
-            throw new Error("Folder path or title is missing.");
-        }
-
-        if (!existsSync(folder.path)) {
-            mkdirSync(folder.path, { recursive: true });
-        }
-    });
-}
-
 const ACCESS_IDS = (process.env.ACCESS_IDS || "").split(",")
 
 const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "", {
@@ -144,19 +103,6 @@ const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "", {
       timeoutSeconds: 30 * 60
      }
 });
-
-const FOLDERS: FolderPath[] = [
-    {
-        title: "Movies",
-        path:"/data/media/movies"
-    },
-    {
-        title: "TV Shows",
-        path: "/data/media/tv"
-    }
-];
-
-validateFolders(FOLDERS);
 
 // Use
 bot.use(conversations());
