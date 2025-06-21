@@ -53,7 +53,7 @@ jobs:
           echo "Labels: ${{ steps.meta.outputs.labels }}"
 
       - run: npm ci
-      # - uses: nrwl/nx-set-shas@v4
+      - uses: nrwl/nx-set-shas@v4
 
       - run: npx nx run-many -t build
 
